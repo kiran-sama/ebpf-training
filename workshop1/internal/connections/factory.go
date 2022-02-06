@@ -22,6 +22,7 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/kiran-sama/ebpf-training/workshop1/internal/structs"
+	"io"
 	"net/http"
 	"strings"
 	"sync"
@@ -58,8 +59,10 @@ func (factory *Factory) HandleReadyConnections() {
 			fmt.Printf("========================>\nFound HTTP payload\nRequest->\n%s\n\nResponse->\n%s\n\n<========================\n", tracker.recvBuf, tracker.sentBuf)
 			reader := bufio.NewReader(strings.NewReader(string(tracker.sentBuf)))
 			req, err := http.ReadRequest(reader)
-			if err != nil {
+			if err == nil {
 				fmt.Printf(req.Method)
+				b, _ := io.ReadAll(req.Body)
+				fmt.Println(string(b))
 			}
 
 		} else if tracker.Malformed() {
