@@ -1,4 +1,4 @@
-module github.com/seek-ret/ebpf-training
+module github.com/kiran-sama/ebpf-training
 
 go 1.16
 

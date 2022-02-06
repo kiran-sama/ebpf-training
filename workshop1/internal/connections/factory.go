@@ -21,7 +21,7 @@ package connections
 import (
 	"bufio"
 	"fmt"
-	"github.com/seek-ret/ebpf-training/workshop1/internal/structs"
+	"github.com/kiran-sama/ebpf-training/workshop1/internal/structs"
 	"net/http"
 	"strings"
 	"sync"

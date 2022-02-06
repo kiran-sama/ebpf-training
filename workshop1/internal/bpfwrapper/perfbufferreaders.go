@@ -22,9 +22,9 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/seek-ret/ebpf-training/workshop1/internal/connections"
-	"github.com/seek-ret/ebpf-training/workshop1/internal/settings"
-	"github.com/seek-ret/ebpf-training/workshop1/internal/structs"
+	"github.com/kiran-sama/ebpf-training/workshop1/internal/connections"
+	"github.com/kiran-sama/ebpf-training/workshop1/internal/settings"
+	"github.com/kiran-sama/ebpf-training/workshop1/internal/structs"
 	"log"
 	"unsafe"
 

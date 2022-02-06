@@ -19,7 +19,7 @@
 package connections
 
 import (
-	structs2 "github.com/seek-ret/ebpf-training/workshop1/internal/structs"
+	structs2 "github.com/kiran-sama/ebpf-training/workshop1/internal/structs"
 	"log"
 	"sync"
 	"time"
@@ -32,8 +32,8 @@ const (
 type Tracker struct {
 	connID structs2.ConnID
 
-	addr          structs2.SockAddrIn
-	openTimestamp uint64
+	addr              structs2.SockAddrIn
+	openTimestamp     uint64
 	closeTimestamp    uint64
 	totalWrittenBytes uint64
 	totalReadBytes    uint64

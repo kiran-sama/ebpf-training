@@ -20,9 +20,9 @@ package main
 
 import (
 	"fmt"
-	bpfwrapper2 "github.com/seek-ret/ebpf-training/workshop1/internal/bpfwrapper"
-	"github.com/seek-ret/ebpf-training/workshop1/internal/connections"
-	"github.com/seek-ret/ebpf-training/workshop1/internal/settings"
+	bpfwrapper2 "github.com/kiran-sama/ebpf-training/workshop1/internal/bpfwrapper"
+	"github.com/kiran-sama/ebpf-training/workshop1/internal/connections"
+	"github.com/kiran-sama/ebpf-training/workshop1/internal/settings"
 	"io/ioutil"
 	"log"
 	"os"

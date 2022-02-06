@@ -69,7 +69,7 @@ linters-settings:
     # put imports beginning with prefix after 3rd-party packages;
     # only support one prefix
     # if not set, use goimports.local-prefixes
-    local-prefixes: github.com/seek-ret/ebpf-training
+    local-prefixes: github.com/kiran-sama/ebpf-training
 
 linters:
   enable:
