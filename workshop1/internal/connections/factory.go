@@ -19,8 +19,11 @@
 package connections
 
 import (
+	"bufio"
 	"fmt"
 	"github.com/seek-ret/ebpf-training/workshop1/internal/structs"
+	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -28,6 +31,7 @@ import (
 // Factory is a routine-safe container that holds a trackers with unique ID, and able to create new tracker.
 type Factory struct {
 	connections         map[structs.ConnID]*Tracker
+	apiInventory        map[string]*ApiSchema
 	inactivityThreshold time.Duration
 	mutex               *sync.RWMutex
 }
@@ -36,6 +40,7 @@ type Factory struct {
 func NewFactory(inactivityThreshold time.Duration) *Factory {
 	return &Factory{
 		connections:         make(map[structs.ConnID]*Tracker),
+		apiInventory:        make(map[string]*ApiSchema),
 		mutex:               &sync.RWMutex{},
 		inactivityThreshold: inactivityThreshold,
 	}
@@ -51,6 +56,12 @@ func (factory *Factory) HandleReadyConnections() {
 				continue
 			}
 			fmt.Printf("========================>\nFound HTTP payload\nRequest->\n%s\n\nResponse->\n%s\n\n<========================\n", tracker.recvBuf, tracker.sentBuf)
+			reader := bufio.NewReader(strings.NewReader(string(tracker.sentBuf)))
+			req, err := http.ReadRequest(reader)
+			if err != nil {
+				fmt.Printf(req.Method)
+			}
+
 		} else if tracker.Malformed() {
 			trackersToDelete[connID] = struct{}{}
 		} else if tracker.IsInactive(factory.inactivityThreshold) {
@@ -62,6 +73,15 @@ func (factory *Factory) HandleReadyConnections() {
 	for key := range trackersToDelete {
 		delete(factory.connections, key)
 	}
+}
+
+func ParseRequest(requestJson string) (string, string, string) {
+
+	return "", "", ""
+}
+
+func ParseResponse(responseJson string) (bool, string) {
+	return false, ""
 }
 
 // GetOrCreate returns a tracker that related to the given connection and transaction ids. If there is no such tracker
