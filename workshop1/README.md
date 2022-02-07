@@ -49,7 +49,7 @@ sudo go run main.go ./sourcecode.c
 
 ## Running test client
 ```bash
-./client/run.sh
+./client/tokens.sh
 ```
 
 ## Output

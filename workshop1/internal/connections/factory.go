@@ -68,17 +68,13 @@ func (factory *Factory) HandleReadyConnections() {
 				} else {
 					if _, ok := factory.apiInventory[req.Method+"_"+req.RequestURI]; !ok {
 						fmt.Println("New URI found")
-						fmt.Println(req.Method)
-						fmt.Println(req.RequestURI)
 						// Building Schema
 						requestSchemaBytes, _ := io.ReadAll(req.Body)
 						requestSchema := string(requestSchemaBytes)
 						responseSchemaBytes, _ := io.ReadAll(res.Body)
 						responseSchema := string(responseSchemaBytes)
-						fmt.Println(requestSchema)
-						fmt.Println(responseSchema)
 						factory.apiInventory[req.Method+"_"+req.RequestURI] = NewApiSchema(
-							req.Method, req.RequestURI, requestSchema, responseSchema, false)
+							req.Method, req.RequestURI, requestSchema, responseSchema, factory.detectPII(responseSchema))
 					}
 				}
 			} else {
@@ -93,6 +89,23 @@ func (factory *Factory) HandleReadyConnections() {
 	for key := range trackersToDelete {
 		delete(factory.connections, key)
 	}
+	for api := range factory.apiInventory {
+		fmt.Println(factory.apiInventory[api])
+	}
+}
+
+func (factory *Factory) detectPII(payload string) bool {
+	keys := make(map[string]struct{})
+	keys["email"] = struct{}{}
+	keys["mobile"] = struct{}{}
+	keys["firstname"] = struct{}{}
+	keys["lastname"] = struct{}{}
+	for key := range keys {
+		if strings.Contains(payload, key) {
+			return true
+		}
+	}
+	return false
 }
 
 // GetOrCreate returns a tracker that related to the given connection and transaction ids. If there is no such tracker

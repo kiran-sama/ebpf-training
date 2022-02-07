@@ -45,7 +45,7 @@ sudo go run xdp_runner.go xdp_prog.c lo
 ## Running the test client
 Run the following and wait for the script to finish. The script sends 2 ICMP requests and 2 ICMPv6 requests.
 ```bash
-./client/run.sh
+./client/tokens.sh
 ```
 
 ## Output

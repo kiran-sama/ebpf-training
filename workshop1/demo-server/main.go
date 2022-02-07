@@ -54,11 +54,23 @@ func postCustomResponse(context *gin.Context) {
 	context.JSON(http.StatusOK, map[string]string{"answer": randStringBytes(customResp.Size)})
 }
 
+func getUserProfile(context *gin.Context) {
+
+	context.JSON(http.StatusOK, map[string]string{
+		"username":  "kiran-sama",
+		"email":     "kisama@coupang.com",
+		"firstName": "Kiran",
+		"lastName":  "Sama",
+	})
+}
+
 func main() {
 	engine := gin.New()
 
 	engine.Use(gin.Recovery())
-	engine.POST("/customResponse", postCustomResponse)
+	engine.POST("/tokens", postCustomResponse)
+	engine.PUT("/tokens", postCustomResponse)
+	engine.GET("/user/profile", getUserProfile)
 
 	port := os.Getenv("PORT")
 	if port == "" {
