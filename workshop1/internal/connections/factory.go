@@ -80,17 +80,8 @@ func (factory *Factory) HandleReadyConnections() {
 				b, _ := io.ReadAll(req.Body)
 				fmt.Println(string(b))
 			} else {
-				fmt.Println(err.Error())
+				fmt.Println("Error building request/response")
 			}
-
-			if err == nil {
-				fmt.Println(res.StatusCode)
-				b, _ := io.ReadAll(res.Body)
-				fmt.Println(string(b))
-			} else {
-				fmt.Println(err.Error())
-			}
-
 		} else if tracker.Malformed() {
 			trackersToDelete[connID] = struct{}{}
 		} else if tracker.IsInactive(factory.inactivityThreshold) {
