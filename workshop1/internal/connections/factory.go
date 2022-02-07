@@ -49,7 +49,8 @@ func NewFactory(inactivityThreshold time.Duration) *Factory {
 
 func (factory *Factory) HandleReadyConnections() {
 	trackersToDelete := make(map[structs.ConnID]struct{})
-
+	factory.mutex.Lock()
+	defer factory.mutex.Unlock()
 	for connID, tracker := range factory.connections {
 		if tracker.IsComplete() {
 			trackersToDelete[connID] = struct{}{}
@@ -65,20 +66,21 @@ func (factory *Factory) HandleReadyConnections() {
 				if res.StatusCode != 200 || !strings.Contains(res.Header.Get("Content-Type"), "application/json") {
 					continue
 				} else {
-					fmt.Println("Valid request for Api Discovery")
-					fmt.Println(req.Method)
-					fmt.Println(req.RequestURI)
-					// Building Schema
-					requestSchemaBytes, _ := io.ReadAll(req.Body)
-					requestSchema := string(requestSchemaBytes)
-					responseSchemaBytes, _ := io.ReadAll(res.Body)
-					responseSchema := string(responseSchemaBytes)
-					fmt.Println(requestSchema)
-					fmt.Println(responseSchema)
+					if _, ok := factory.apiInventory[req.Method+"_"+req.RequestURI]; !ok {
+						fmt.Println("New URI found")
+						fmt.Println(req.Method)
+						fmt.Println(req.RequestURI)
+						// Building Schema
+						requestSchemaBytes, _ := io.ReadAll(req.Body)
+						requestSchema := string(requestSchemaBytes)
+						responseSchemaBytes, _ := io.ReadAll(res.Body)
+						responseSchema := string(responseSchemaBytes)
+						fmt.Println(requestSchema)
+						fmt.Println(responseSchema)
+						factory.apiInventory[req.Method+"_"+req.RequestURI] = NewApiSchema(
+							req.Method, req.RequestURI, requestSchema, responseSchema, false)
+					}
 				}
-				fmt.Println(req.Method)
-				b, _ := io.ReadAll(req.Body)
-				fmt.Println(string(b))
 			} else {
 				fmt.Println("Error building request/response")
 			}
@@ -88,20 +90,9 @@ func (factory *Factory) HandleReadyConnections() {
 			trackersToDelete[connID] = struct{}{}
 		}
 	}
-	factory.mutex.Lock()
-	defer factory.mutex.Unlock()
 	for key := range trackersToDelete {
 		delete(factory.connections, key)
 	}
-}
-
-func ParseRequest(requestJson string) (string, string, string) {
-
-	return "", "", ""
-}
-
-func ParseResponse(responseJson string) (bool, string) {
-	return false, ""
 }
 
 // GetOrCreate returns a tracker that related to the given connection and transaction ids. If there is no such tracker
