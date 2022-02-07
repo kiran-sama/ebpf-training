@@ -243,6 +243,9 @@ static inline __attribute__((__always_inline__)) bool is_http_connection(struct 
     if (buf[0] == 'P' && buf[1] == 'O' && buf[2] == 'S' && buf[3] == 'T') {
         res = true;
     }
+    if (buf[0] == 'P' && buf[1] == 'U' && buf[2] == 'T') {
+        res = true;
+    }
 
     if (res) {
         conn_info->is_http = true;

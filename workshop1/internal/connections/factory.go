@@ -67,7 +67,7 @@ func (factory *Factory) HandleReadyConnections() {
 					continue
 				} else {
 					if _, ok := factory.apiInventory[req.Method+"_"+req.RequestURI]; !ok {
-						fmt.Println("New URI found")
+						fmt.Println("New URI found, adding to api inventory")
 						// Building Schema
 						requestSchemaBytes, _ := io.ReadAll(req.Body)
 						requestSchema := string(requestSchemaBytes)
@@ -89,8 +89,13 @@ func (factory *Factory) HandleReadyConnections() {
 	for key := range trackersToDelete {
 		delete(factory.connections, key)
 	}
+	fmt.Println("Api Inventory")
 	for api := range factory.apiInventory {
-		fmt.Println(factory.apiInventory[api])
+		fmt.Printf("========================>\nURI:%s\nMethod:%s\nRequestSchema:%s\nResponseSchema:%s\nContainsPII:%s\n<========================\n",
+			factory.apiInventory[api].uri, factory.apiInventory[api].method,
+			factory.apiInventory[api].requestSchema, factory.apiInventory[api].responseSchema,
+			factory.apiInventory[api].containsPII,
+		)
 	}
 }
 
