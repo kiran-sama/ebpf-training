@@ -67,6 +67,7 @@ func (factory *Factory) HandleReadyConnections() {
 				fmt.Println(err.Error())
 			}
 
+			reader = bufio.NewReader(strings.NewReader(string(tracker.sentBuf)))
 			res, err := http.ReadResponse(reader, req)
 			if err == nil {
 				fmt.Println(res.StatusCode)
