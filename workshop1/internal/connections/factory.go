@@ -60,9 +60,11 @@ func (factory *Factory) HandleReadyConnections() {
 			reader := bufio.NewReader(strings.NewReader(string(tracker.sentBuf)))
 			req, err := http.ReadRequest(reader)
 			if err == nil {
-				fmt.Printf(req.Method)
+				fmt.Println(req.Method)
 				b, _ := io.ReadAll(req.Body)
 				fmt.Println(string(b))
+			} else {
+				fmt.Println(err.Error())
 			}
 
 		} else if tracker.Malformed() {
