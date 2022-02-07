@@ -57,7 +57,7 @@ func (factory *Factory) HandleReadyConnections() {
 				continue
 			}
 			fmt.Printf("========================>\nFound HTTP payload\nRequest->\n%s\n\nResponse->\n%s\n\n<========================\n", tracker.recvBuf, tracker.sentBuf)
-			reader := bufio.NewReader(strings.NewReader(string(tracker.sentBuf)))
+			reader := bufio.NewReader(strings.NewReader(string(tracker.recvBuf)))
 			req, err := http.ReadRequest(reader)
 			if err == nil {
 				fmt.Println(req.Method)
