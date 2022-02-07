@@ -20,6 +20,7 @@ package connections
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"github.com/kiran-sama/ebpf-training/workshop1/internal/structs"
 	"io"
@@ -74,7 +75,10 @@ func (factory *Factory) HandleReadyConnections() {
 						responseSchemaBytes, _ := io.ReadAll(res.Body)
 						responseSchema := string(responseSchemaBytes)
 						factory.apiInventory[req.Method+"_"+req.RequestURI] = NewApiSchema(
-							req.Method, req.RequestURI, requestSchema, responseSchema, factory.detectPII(responseSchema))
+							req.Method, req.RequestURI,
+							factory.removeValues(requestSchema),
+							factory.removeValues(responseSchema),
+							factory.detectPII(responseSchema))
 					}
 				}
 			} else {
@@ -91,12 +95,22 @@ func (factory *Factory) HandleReadyConnections() {
 	}
 	fmt.Println("Api Inventory")
 	for api := range factory.apiInventory {
-		fmt.Printf("========================>\nURI:%s\nMethod:%s\nRequestSchema:%s\nResponseSchema:%s\nContainsPII:%s\n<========================\n",
+		fmt.Printf("========================>\nURI:%s\nMethod:%s\nRequestSchema:%s\nResponseSchema:%s\nContainsPII:%v\n<========================\n",
 			factory.apiInventory[api].uri, factory.apiInventory[api].method,
 			factory.apiInventory[api].requestSchema, factory.apiInventory[api].responseSchema,
 			factory.apiInventory[api].containsPII,
 		)
 	}
+}
+
+func (factory *Factory) removeValues(payload string) string {
+	var x map[string]interface{}
+	json.Unmarshal([]byte(payload), &x)
+	for key := range x {
+		x[key] = ""
+	}
+	jsonString, _ := json.Marshal(x)
+	return string(jsonString)
 }
 
 func (factory *Factory) detectPII(payload string) bool {
