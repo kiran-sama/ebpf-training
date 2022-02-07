@@ -58,8 +58,24 @@ func (factory *Factory) HandleReadyConnections() {
 			}
 			fmt.Printf("========================>\nFound HTTP payload\nRequest->\n%s\n\nResponse->\n%s\n\n<========================\n", tracker.recvBuf, tracker.sentBuf)
 			reader := bufio.NewReader(strings.NewReader(string(tracker.recvBuf)))
-			req, err := http.ReadRequest(reader)
-			if err == nil {
+			req, e1 := http.ReadRequest(reader)
+			reader = bufio.NewReader(strings.NewReader(string(tracker.sentBuf)))
+			res, e2 := http.ReadResponse(reader, req)
+			if e1 == nil && e2 == nil {
+				if res.StatusCode != 200 || !strings.Contains(res.Header.Get("Content-Type"), "application/json") {
+					continue
+				} else {
+					fmt.Println("Valid request for Api Discovery")
+					fmt.Println(req.Method)
+					fmt.Println(req.RequestURI)
+					// Building Schema
+					requestSchemaBytes, _ := io.ReadAll(req.Body)
+					requestSchema := string(requestSchemaBytes)
+					responseSchemaBytes, _ := io.ReadAll(res.Body)
+					responseSchema := string(responseSchemaBytes)
+					fmt.Println(requestSchema)
+					fmt.Println(responseSchema)
+				}
 				fmt.Println(req.Method)
 				b, _ := io.ReadAll(req.Body)
 				fmt.Println(string(b))
@@ -67,8 +83,6 @@ func (factory *Factory) HandleReadyConnections() {
 				fmt.Println(err.Error())
 			}
 
-			reader = bufio.NewReader(strings.NewReader(string(tracker.sentBuf)))
-			res, err := http.ReadResponse(reader, req)
 			if err == nil {
 				fmt.Println(res.StatusCode)
 				b, _ := io.ReadAll(res.Body)
