@@ -58,7 +58,7 @@ func getUserProfile(context *gin.Context) {
 
 	context.JSON(http.StatusOK, map[string]string{
 		"username":  "kiran-sama",
-		"email":     "kisama@coupang.com",
+		"email":     "something@gmail.com",
 		"firstName": "Kiran",
 		"lastName":  "Sama",
 	})
