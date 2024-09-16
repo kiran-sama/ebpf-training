@@ -113,7 +113,7 @@ func main() {
 	allowedPIDs := []uint32{6743, 8338}
 
 	// Update PIDs in the BPF map
-	err := updateAllowedPIDs(allowedPidsTable, allowedPIDs)
+	err = updateAllowedPIDs(allowedPidsTable, allowedPIDs)
 	if err != nil {
 		log.Fatalf("Failed to update allowed PIDs: %v", err)
 	}
