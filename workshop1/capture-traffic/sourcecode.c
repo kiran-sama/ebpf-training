@@ -155,6 +155,15 @@ BPF_HASH(active_read_args_map, uint64_t, struct data_args_t);
 // An helper map to store close syscall arguments between entry and exit syscalls.
 BPF_HASH(active_close_args_map, uint64_t, struct close_args_t);
 
+// A map to store allowed PIDs, updated periodically from Go userspace.
+BPF_HASH(allowed_pids, uint32_t, uint8_t, 1024);
+
+// Helper function to check if the PID is allowed.
+static __inline bool is_pid_allowed(uint32_t pid) {
+    uint8_t* allowed = allowed_pids.lookup(&pid);
+    return allowed != NULL;
+}
+
 // Helper functions
 
 // Generates a unique identifier using a tgid (Thread Global ID) and a fd (File Descriptor).
@@ -174,6 +183,10 @@ static __inline void process_syscall_accept(struct pt_regs* ctx, uint64_t id, co
 
     struct conn_info_t conn_info = {};
     uint32_t pid = id >> 32;
+    // Check if the PID is allowed.
+    if (!is_pid_allowed(pid)) {
+        return;
+    }
     conn_info.conn_id.pid = pid;
     conn_info.conn_id.fd = ret_fd;
     conn_info.conn_id.tsid = bpf_ktime_get_ns();
@@ -315,26 +328,6 @@ static __inline void perf_submit_wrapper(struct pt_regs* ctx,
     }
 }
 
-static inline __attribute__((__always_inline__)) bool has_localhost_host_header(const char* buf, size_t count) {
-    // Search for "Host: localhost:8080" header in the HTTP buffer.
-    const char* host_header = "Host: localhost:8080";
-    const size_t header_len = 21; // Length of "Host: localhost:8080"
-
-    // We limit the search to the first 512 bytes, as the host header is typically near the start.
-    size_t search_limit = count < 512 ? count : 512;
-
-    #pragma unroll
-    for (int i = 0; i <= search_limit - header_len; i++) {
-        // Check for a match of the "Host: localhost:8080" string.
-        if (buf[i] == 'H' && buf[i+1] == 'o' && buf[i+2] == 's' && buf[i+3] == 't') {
-            // Compare the buffer content with "Host: localhost:8080".
-            if (__builtin_memcmp(buf + i, host_header, header_len) == 0) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
 
 static inline __attribute__((__always_inline__)) void process_data(struct pt_regs* ctx, uint64_t id,
                                                                    enum traffic_direction_t direction,
@@ -351,6 +344,10 @@ static inline __attribute__((__always_inline__)) void process_data(struct pt_reg
     }
 
     uint32_t pid = id >> 32;
+    // Check if the PID is allowed.
+    if (!is_pid_allowed(pid)) {
+        return;
+    }
     uint64_t pid_fd = ((uint64_t)pid << 32) | (uint32_t)args->fd;
     struct conn_info_t* conn_info = conn_info_map.lookup(&pid_fd);
     if (conn_info == NULL) {
@@ -360,11 +357,6 @@ static inline __attribute__((__always_inline__)) void process_data(struct pt_reg
 
     // Check if the connection is already HTTP, or check if that's a new connection, check protocol and return true if that's HTTP.
     if (is_http_connection(conn_info, args->buf, bytes_count)) {
-        // Check if the "Host" header matches "localhost:8080"
-        if (direction == kIngress && !has_localhost_host_header(args->buf, bytes_count)) {
-            // If the Host header is not localhost:8080, drop the request.
-            return;
-        }
         // allocate new event.
         uint32_t kZero = 0;
         struct socket_data_event_t* event = socket_data_event_buffer_heap.lookup(&kZero);

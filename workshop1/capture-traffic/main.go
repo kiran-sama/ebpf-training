@@ -54,6 +54,27 @@ func recoverFromCrashes() {
 	}
 }
 
+// updateAllowedPIDs updates the BPF map by adding the given PIDs
+func updateAllowedPIDs(table *bcc.Table, pids []uint32) error {
+	for _, pid := range pids {
+		key := make([]byte, 4)
+		value := make([]byte, 1)
+
+		// Convert pid to a byte array to use as a key
+		bcc.GetHostByteOrder().PutUint32(key, pid)
+
+		// The value is arbitrary, for example purposes we set it to 1
+		value[0] = 1
+
+		err := table.Set(key, value)
+		if err != nil {
+			return fmt.Errorf("failed to update allowed_pids map for PID %d: %v", pid, err)
+		}
+		fmt.Printf("Added PID %d to allowed_pids map\n", pid)
+	}
+	return nil
+}
+
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Println("Usage: go run main.go <path to bpf source code>")
@@ -72,6 +93,7 @@ func main() {
 		log.Printf("Failed fixing BPF clock, timings will be offseted: %v", err)
 	}
 
+
 	// Catching all termination signals to perform a cleanup when being stopped.
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTERM)
@@ -81,6 +103,20 @@ func main() {
 		log.Panic("bpf is nil")
 	}
 	defer bpfModule.Close()
+
+
+	// Load the BPF map (allowed_pids)
+	mapFD := bpfModule.TableId("allowed_pids")
+	allowedPidsTable := bcc.NewTable(mapFD, bpfModule)
+
+	// Example PIDs to update
+	allowedPIDs := []uint32{6743, 8338}
+
+	// Update PIDs in the BPF map
+	err := updateAllowedPIDs(allowedPidsTable, allowedPIDs)
+	if err != nil {
+		log.Fatalf("Failed to update allowed PIDs: %v", err)
+	}
 
 	connectionFactory := connections.NewFactory(time.Minute)
 	go func() {
