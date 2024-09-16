@@ -110,7 +110,7 @@ func main() {
 	allowedPidsTable := bcc.NewTable(mapFD, bpfModule)
 
 	// Example PIDs to update
-	allowedPIDs := []uint32{6743, 8338}
+	allowedPIDs := []uint32{674, 833}
 
 	// Update PIDs in the BPF map
 	err = updateAllowedPIDs(allowedPidsTable, allowedPIDs)
